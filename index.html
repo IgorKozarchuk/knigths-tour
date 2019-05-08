@@ -189,6 +189,94 @@
 			knight.style.display = "none";
 			// ...
 		}
+
+		/*** Algorithm for Knight's tour problem using Warnsdorff's rule ***/
+		/* We can start from any initial position of the knight on the board. We always move to an adjacent, unvisited square with minimal degree (minimum number of unvisited adjacent). */
+
+		let N = 8; // board size
+		let x, y; // current coordinates of the knight
+		// possible 8 moves (coordinates difference along X and Y axes)
+		let dx = [1, 1, 2, 2, -1, -1, -2, -2];
+		let dy = [2, -2, 1, -1, 2, -2, 1, -1];
+
+		// Knight's tour (x0, y0 - initial position)
+		function knightsTour(N=8, x0=0, y0=0) {
+			// filling up the chessboard matrix with -1
+			let board = [];
+			let Nsqr = N * N;
+			for (let i = 0; i < Nsqr; i++) {
+				board[i] = -1;
+			}
+			// current coords are same as initial position
+			x = x0;
+			y = y0;
+			// mark first move ([y*N + x] represents board as 1D array)
+			board[y*N + x] = 1;
+			// keep picking next move using Warnsdorff's heuristic
+			for (let i = 0; i < Nsqr-1; i++) {
+				nextMove(board, x, y);
+			}
+			
+			return board;
+		}
+
+		// pick next move using Warnsdorff's heuristic
+		function nextMove(board) {
+			let minDegIndex = -1;
+			let minDeg = N + 1;
+			let nx, ny; // new x and y coords after a move
+			let deg; // degree
+			let start = 0; // adjacent cell to start selecting
+			// find the adjacent with minimum degree
+			for (let count = 0; count < N; count++) {
+				let i = (start + count) % N; // degree index
+				nx = x + dx[i];
+				ny = y + dy[i];
+
+				if ((isEmpty(board, nx, ny)) && (deg = getDegree(board, nx, ny)) < minDeg) {
+					minDegIndex = i;
+					minDeg = deg;
+				}
+			}
+			// if next position not found
+			if (minDegIndex == -1) return false;
+			// store coords of next position
+			nx = x + dx[minDegIndex];
+			ny = y + dy[minDegIndex];
+			// mark next move
+			board[ny*N + nx] = board[y*N + x] + 1;
+			// update next position
+			x = nx;
+			y = ny;
+
+			return true;
+		}
+
+		// check whether a cell is valid and not visited
+		function isEmpty(board, x, y) {
+			return (limits(x, y) && (board[y*N + x] < 0));
+		}
+
+		// restrict the knight to remain within the chessboard
+		function limits(x, y) {
+			return (x >= 0 && y >= 0) && (x < N && y < N);
+		}
+
+		// number of empty cells adjacent to (x, y)
+		function getDegree(board, x, y) {
+			let degree = 0;
+
+			for (let i = 0; i < N; i++) {
+				let x1 = x + dx[i];
+				let y1 = y + dy[i];
+				if (isEmpty(board, x1, y1)) degree++;
+			}
+
+			return degree;
+		}
+		/*** End of Knight's tour ***/
+
+		console.log(knightsTour(N));
 	</script>
 </body>
 </html>
