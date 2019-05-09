@@ -110,8 +110,10 @@
 		let knight = document.getElementById("knight");
 		let drawBtn = document.getElementById("drawBtn");
 		let resetBtn = document.getElementById("resetBtn");
+		let sizeInput = document.getElementById("boardSize");
 		let chessBoard;
-
+		// board size
+		let N = +sizeInput.value;
 		let tourMoves = [];
 
 		// event listeners
@@ -121,21 +123,22 @@
 
 		resetBtn.addEventListener("click", resetKnight);
 
+		document.getElementById("boardSize")
+
 		// draw chess board
 		function drawBoard() {
 			// if board already exists redraw it
 			chessBoard = document.getElementById("chessBoard");
 			if (chessBoard) board.remove();
-			// board size
-			let size = +document.getElementById("boardSize").value;
 			// create chess board
 			chessBoard = document.createElement("TABLE");
 			chessBoard.id = "chessBoard";
+			N = +sizeInput.value;
 
-			for (let i = 0; i < size; i++) {
+			for (let i = 0; i < N; i++) {
 				let row = document.createElement("TR");
 
-				for (let j = 0; j < size; j++) {
+				for (let j = 0; j < N; j++) {
 					let cell = document.createElement("TD");
 					let span = document.createElement("SPAN");
 					cell.appendChild(span);
@@ -145,7 +148,7 @@
 				chessBoard.appendChild(row);
 			}
 
-			setBoardSize(chessBoard, size);
+			setBoardSize(chessBoard, N);
 
 			result.appendChild(chessBoard);
 
@@ -201,10 +204,10 @@
 		}
 
 		/*** Algorithm for Knight's tour problem using Warnsdorff's rule ***/
+		/* https://www.geeksforgeeks.org/warnsdorffs-algorithm-knights-tour-problem/ */
 		/* We can start from any initial position of the knight on the board. We always move to an adjacent, unvisited square with minimal degree (minimum number of unvisited adjacent). */
 
-		let N = 8; // board size
-		let Nsqr = N * N;
+		
 		let x0, y0; // initial coords
 		let x, y; // current coordinates of the knight
 		// possible 8 moves (coords difference along X and Y axes)
@@ -215,6 +218,7 @@
 		function knightsTour(N=8, x0=0, y0=0) {
 			// filling up the chessboard matrix with -1
 			let board = [];
+			let Nsqr = N * N;
 			for (let i = 0; i < Nsqr; i++) {
 				board[i] = -1;
 			}
@@ -296,6 +300,7 @@
 		}
 		// write moves
 		function writeMoves() {
+			let Nsqr = N * N;
 			for (let i = 0; i < Nsqr; i++) {
 				cellsArr[i].n = tourMoves[i];
 			}
