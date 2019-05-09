@@ -38,6 +38,7 @@
 		#chessBoard td span {
 			/* https://stackoverflow.com/questions/3407292/how-come-there-is-4px-of-extra-padding-appearing-under-my-a-element */
 			vertical-align: bottom; /* remove extra padding below span/img */
+			color: #000;
 		}
 		#chessBoard tr:nth-child(2n+1) td:nth-child(2n+1),
 		#chessBoard tr:nth-child(2n) td:nth-child(2n) {
@@ -50,6 +51,7 @@
 		}
 		#knight {
 			display: none;
+			position: absolute;
 		}
 		button, input {
 			font-family: "Quattrocento", serif;
@@ -61,7 +63,7 @@
 		button {
 			cursor: pointer;
 			border: none;
-			color: white;
+			color: #FFF;
 			border-radius: 50%;
 			width: 40px;
 			height: 40px;
@@ -73,7 +75,7 @@
 		}
 		input {
 			padding: 4px 8px;
-			border: 1px solid lightgrey;
+			border: 1px solid #D3D3D3;
 		}
 		label[for="resetBtn"] {
 			margin-left: 10px;
@@ -108,20 +110,26 @@
 		let knight = document.getElementById("knight");
 		let drawBtn = document.getElementById("drawBtn");
 		let resetBtn = document.getElementById("resetBtn");
+		let chessBoard;
+
+		let tourMoves = [];
 
 		// event listeners
-		drawBtn.addEventListener("click", drawBoard);
+		drawBtn.addEventListener("click", function() {drawBoard();
+			getCellsCoords(chessBoard);
+		});
+
 		resetBtn.addEventListener("click", resetKnight);
 
 		// draw chess board
 		function drawBoard() {
 			// if board already exists redraw it
-			let board = document.getElementById("chessBoard");
-			if (board) board.remove();
+			chessBoard = document.getElementById("chessBoard");
+			if (chessBoard) board.remove();
 			// board size
 			let size = +document.getElementById("boardSize").value;
 			// create chess board
-			let chessBoard = document.createElement("TABLE");
+			chessBoard = document.createElement("TABLE");
 			chessBoard.id = "chessBoard";
 
 			for (let i = 0; i < size; i++) {
@@ -148,7 +156,10 @@
 				while (target != chessBoard) {
 					if (target.tagName == "TD") {
 						placeKnight(target);
-						return
+						tourMoves = knightsTour(N, x0, y0);
+						writeMoves();
+						showMoves(chessBoard);
+						return;
 					}
 					target = target.parentNode;
 				}
@@ -175,13 +186,12 @@
 		// place knight on click
 		function placeKnight(cell) {
 			// get cell coords
-			let coords = { x: 0, y: 0 };
-			coords.x = cell.cellIndex;
-			coords.y = cell.parentNode.rowIndex;	
+			x0 = cell.cellIndex;
+			y0 = cell.parentNode.rowIndex;	
 			// place knight
-			cell.childNodes[0].innerHTML = "";
-			cell.childNodes[0].appendChild(knight);
 			knight.style.display = "initial";
+			knight.style.left = getCoords(cell).left - knight.clientWidth / 2 + "px";
+			knight.style.top = getCoords(cell).top - knight.clientHeight / 2 + "px";
 		}
 
 		// reset knight's position
@@ -194,8 +204,10 @@
 		/* We can start from any initial position of the knight on the board. We always move to an adjacent, unvisited square with minimal degree (minimum number of unvisited adjacent). */
 
 		let N = 8; // board size
+		let Nsqr = N * N;
+		let x0, y0; // initial coords
 		let x, y; // current coordinates of the knight
-		// possible 8 moves (coordinates difference along X and Y axes)
+		// possible 8 moves (coords difference along X and Y axes)
 		let dx = [1, 1, 2, 2, -1, -1, -2, -2];
 		let dy = [2, -2, 1, -1, 2, -2, 1, -1];
 
@@ -203,7 +215,6 @@
 		function knightsTour(N=8, x0=0, y0=0) {
 			// filling up the chessboard matrix with -1
 			let board = [];
-			let Nsqr = N * N;
 			for (let i = 0; i < Nsqr; i++) {
 				board[i] = -1;
 			}
@@ -275,8 +286,74 @@
 			return degree;
 		}
 		/*** End of Knight's tour ***/
+		
+		let cellsArr = [];
+		// contains order of moves and coords of every cell
+		function Cell(x, y, n) {
+			this.x = x; // x coordinate of the cell
+			this.y = y; // y coordinate
+			this.n = n; // cell position in knight's tour
+		}
+		// write moves
+		function writeMoves() {
+			for (let i = 0; i < Nsqr; i++) {
+				cellsArr[i].n = tourMoves[i];
+			}
+		}
 
-		console.log(knightsTour(N));
+		// get cells coords
+		function getCellsCoords(board) {
+			if (!board) return;
+
+			let coords = [];
+			let cells = board.querySelectorAll("SPAN");
+			
+			for (let i = 0; i < cells.length; i++) {
+				coords.push({
+						x: getCoords(cells[i]).left,
+						y: getCoords(cells[i]).top,
+					}
+				);
+				cellsArr.push(new Cell(coords[i].x, coords[i].y));
+			}
+
+			return coords;
+		}
+
+		// show moves in cells
+		function showMoves(board) {
+			let cells = board.querySelectorAll("SPAN");
+			let knightXOffset = knight.clientWidth / 2;
+			let knightYOffset = knight.clientHeight / 2;
+			
+			function go(counter) {
+				if (counter < cells.length) {
+					setTimeout(function() {
+						let objCurrent = cellsArr.find(o => o.n === counter+1);
+						let objNext = cellsArr.find(o => o.n === counter+2);
+						if (!objNext) return;
+						// show moves starting from 2nd position
+						knight.style.left = objNext.x - knightXOffset + "px";
+						knight.style.top = objNext.y - knightYOffset + "px";
+						// write move number
+						cells[cellsArr.indexOf(objCurrent)].innerHTML = objCurrent.n;
+						counter++;
+						go(counter);
+					}, 200);
+				}
+			}
+			go(0);
+		}
+
+		// get coordinates in document of element's center 
+		function getCoords(elem) {
+			let box = elem.getBoundingClientRect();
+
+			return {
+				top: parseInt(box.top + pageYOffset + elem.clientWidth / 2),
+				left: parseInt(box.left + pageXOffset + elem.clientHeight / 2)
+			};
+		}
 	</script>
 </body>
 </html>
