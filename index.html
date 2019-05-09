@@ -94,7 +94,7 @@
 
 	<div class="content">
 		<label for="boardSize">Board size: </label>
-		<input id="boardSize" type="number" min="4" max="10" placeholder="8" value="8">
+		<input id="boardSize" type="number" min="5" max="12" placeholder="8" value="8">
 		<button id="drawBtn" title="Draw chess board"><i class="fas fa-pencil-alt"></i></button>
 		<label for="resetBtn">Reset knight: </label><button id="resetBtn" title="Reset knight"><i class="fas fa-redo"></i></button>
 		<p>Click any cell on the board to start a tour:</p>
@@ -112,8 +112,8 @@
 		let resetBtn = document.getElementById("resetBtn");
 		let sizeInput = document.getElementById("boardSize");
 		let chessBoard;
-		// board size
-		let N = +sizeInput.value;
+		let N = +sizeInput.value; // board size
+		let cellsArr = [];
 		let tourMoves = [];
 
 		// event listeners
@@ -123,13 +123,12 @@
 
 		resetBtn.addEventListener("click", resetKnight);
 
-		document.getElementById("boardSize")
-
 		// draw chess board
 		function drawBoard() {
 			// if board already exists redraw it
 			chessBoard = document.getElementById("chessBoard");
-			if (chessBoard) board.remove();
+			if (chessBoard) chessBoard.remove();
+			tourMoves = []; // reset moves
 			// create chess board
 			chessBoard = document.createElement("TABLE");
 			chessBoard.id = "chessBoard";
@@ -200,14 +199,16 @@
 		// reset knight's position
 		function resetKnight() {
 			knight.style.display = "none";
-			// ...
+			tourMoves = []; // reset moves
+			let cells = chessBoard.querySelectorAll("SPAN");
+			for (let i = 0; i < cells.length; i++) {
+				cells[i].innerHTML = "";
+			}
 		}
 
 		/*** Algorithm for Knight's tour problem using Warnsdorff's rule ***/
 		/* https://www.geeksforgeeks.org/warnsdorffs-algorithm-knights-tour-problem/ */
 		/* We can start from any initial position of the knight on the board. We always move to an adjacent, unvisited square with minimal degree (minimum number of unvisited adjacent). */
-
-		
 		let x0, y0; // initial coords
 		let x, y; // current coordinates of the knight
 		// possible 8 moves (coords difference along X and Y axes)
@@ -217,6 +218,7 @@
 		// Knight's tour (x0, y0 - initial position)
 		function knightsTour(N=8, x0=0, y0=0) {
 			// filling up the chessboard matrix with -1
+			// -1 - not visited, 1...N*N - visited
 			let board = [];
 			let Nsqr = N * N;
 			for (let i = 0; i < Nsqr; i++) {
@@ -229,7 +231,7 @@
 			board[y*N + x] = 1;
 			// keep picking next move using Warnsdorff's heuristic
 			for (let i = 0; i < Nsqr-1; i++) {
-				nextMove(board, x, y);
+				nextMove(board);
 			}
 			
 			return board;
@@ -291,7 +293,6 @@
 		}
 		/*** End of Knight's tour ***/
 		
-		let cellsArr = [];
 		// contains order of moves and coords of every cell
 		function Cell(x, y, n) {
 			this.x = x; // x coordinate of the cell
