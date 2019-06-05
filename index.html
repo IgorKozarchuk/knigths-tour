@@ -13,6 +13,9 @@
 			}
 			body {
 				font-family: "Quattrocento", serif;
+				/* always specify font-size */
+				/* different browsers have diff. default font-size */
+				font-size: 16px;
 				background: #efd9c2 url(wood-bg.jpg);
 				background-size: cover;
 				background-repeat: no-repeat;
@@ -29,6 +32,8 @@
 				margin: auto;
 				border-collapse: collapse;
 				border: 8px solid #9F6541;
+				-moz-user-select: none;
+				-webkit-user-select: none;
 				user-select: none;
 			}
 			#chessBoard td {
@@ -79,6 +84,9 @@
 			}
 			label[for="resetBtn"] {
 				margin-left: 10px;
+			}
+			#boardSize {
+				width: 60px;
 			}
 			#drawBtn {
 				background-color: #769656;
